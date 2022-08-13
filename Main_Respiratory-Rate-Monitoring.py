@@ -442,7 +442,7 @@ def main(args):
     RR1 = eliminate_abnormal_peaks(indices[0], PPG_nose, rate1, total_num)
     RR2 = eliminate_abnormal_peaks(indices_1[0], PPG_nose_1, rate1, total_num)
 
-    print('RR_value = ', RR2)
+    print('RR_value = ', RR1)
   
 
 
