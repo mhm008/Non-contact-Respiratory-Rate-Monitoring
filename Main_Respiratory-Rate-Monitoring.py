@@ -96,23 +96,6 @@ def normalize(signals):
     # normalized_signals = (signals - np.min(signals)) / (np.max(signals)-np.min(signals))
     return normalized_signals
 
-# def detrend(signals, param_lambda):
-#     # https://blog.csdn.net/piaoxuezhong/article/details/79211586
-#     signal_len = len(signals)
-#     I = np.identity(signal_len)
-#     B = np.array([1, -2, 1])
-
-#     # 当 signal_len - 2<0情况，出现负值问题未判断！ 例如signals:[],这部分不懂判断后处理方式
-#     ones = np.ones((signal_len - 2, 1))
-#     multi = B * ones
-#     D2 = np.zeros((signal_len - 2, signal_len))
-#     for i in range(D2.shape[0]):
-#         D2[i, i:i + 3] = multi[i]
-#     tr_D2 = np.transpose(D2)
-#     multi_D2 = np.dot(tr_D2, D2)
-#     inverse = I - (np.linalg.inv(I + (multi_D2 * pow(param_lambda, 2))))
-#     detrend_signals = np.dot(inverse, signals)
-#     return detrend_signals
 
 
 def detrend(X, detLambda=10):  # new detrend
