@@ -10,9 +10,7 @@ import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-import jadeR    #  独立成分分析(ICA)
 
-# https://github.com/NklausMikealson/SiameseFC-pytorch
 
 # #  呼吸率对应的频率:0.15-0.40Hz，https://www.nature.com/articles/s41598-019-53808-9
 # RR_Min_HZ = 0.15
