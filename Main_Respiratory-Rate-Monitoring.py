@@ -385,15 +385,14 @@ def main(args):
     print('RR_value0 = ', RR1)
 
     # 方法二： 2.1 没有平滑处理的步骤，直接对信号进行预处理。
-    PPG_nose_1 = infrared_preprocessing(ppg_infrared_nose)
-    # 波峰检测
-    indices_1 = find_peaks(PPG_nose_1, height=None, threshold=None, distance=5,
-                                 prominence=None, width=None, wlen=None, rel_height=None,
-                                 plateau_size=None)
+    # PPG_nose_1 = infrared_preprocessing(ppg_infrared_nose)
+    # # 波峰检测
+    # indices_1 = find_peaks(PPG_nose_1, height=None, threshold=None, distance=5,
+    #                              prominence=None, width=None, wlen=None, rel_height=None,
+    #                              plateau_size=None)
 
     # 2.2 剔除错误波峰
     # RR2 = eliminate_abnormal_peaks(indices_1[0], PPG_nose_1, rate1, total_num, FPS)
-
 
     # fig_0 = plt.figure()
     # plt.plot(ppg_infrared_nose)
