@@ -11,12 +11,12 @@ from scipy.signal import find_peaks
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-
 # #  呼吸率对应的频率:0.15-0.40Hz，https://www.nature.com/articles/s41598-019-53808-9
-# RR_Min_HZ = 0.15
 RR_Min_HZ = 0.15
-RR_Max_HZ = 0.70
-# RR_Max_HZ = 0.40
+RR_Max_HZ = 0.40
+# RR_Min_HZ = 0.15
+# RR_Max_HZ = 0.70
+
 # 采样频率
 FPS = 25
 
@@ -25,9 +25,7 @@ def parse_args():
     args for testing.
     """
     parser = argparse.ArgumentParser(
-        description='PyTorch SiamFC Tracking Demo')
-    parser.add_argument('--video', dest='video',
-                        default='./test.mp4', help='video path')
+        description='Non-contact-Respiratory-Rate-Monitoring')
     parser.add_argument('--model', dest='model',
                         default='pretrained/siamfc/model.pth', help='pretrained model')
     args = parser.parse_args()
@@ -84,7 +82,7 @@ def infrared_preprocessing(signals):
     normalized_signals = normalize(detrend_signals)
     # 滤波
     filtered_signals = filter_signal_infrared(normalized_signals)
-    return filtered_signals
+    return smooth_data(filtered_signals)
 
 def normalize(signals):
     # print('func:normalize>>{},type:{}'.format(signals,type(signals)))
@@ -93,7 +91,6 @@ def normalize(signals):
     normalized_signals = (signals - np.mean(signals)) / np.std(signals, ddof=1)
     # normalized_signals = (signals - np.min(signals)) / (np.max(signals)-np.min(signals))
     return normalized_signals
-
 
 
 def detrend(X, detLambda=10):  # new detrend
@@ -152,92 +149,47 @@ def rr_extraction(PPG_values):
     return rr_value
 
 
-def eliminate_abnormal_peaks(index_arr, PPG_nose, rate, total_num):
+def eliminate_abnormal_peaks(index_arr, PPG_nose, rate, total_num, FPS):
     peaks_values_arr = []
     for i in range(len(index_arr)):
         if PPG_nose[index_arr[i]] > 0:
             peaks_value = PPG_nose[index_arr[i]]
             peaks_values_arr.append(peaks_value)
 
-    # print('peaks_values_arr:',peaks_values_arr)
+    # 波峰的平均幅度
     avg_value_peaks = np.mean(peaks_values_arr)
-
-    # print('avg_value_peaks:',avg_value_peaks)
-
-    rr_peak_count = 0
+    # 波峰限制
     max_value_peak = avg_value_peaks + avg_value_peaks * rate
     min_value_peak = avg_value_peaks-avg_value_peaks * rate
     # print('max_value_peak:',max_value_peak)
     # print('min_value_peak:',min_value_peak)
-    peak_index = []
+
+
+    rr_peak_count = 0 # PPG_nose信号中的累加波峰个数
+    peak_index = []  # 波峰索引
     for i in range(len(index_arr)):
         if PPG_nose[index_arr[i]] >= min_value_peak:
             peak_index.append(index_arr[i])
             rr_peak_count = rr_peak_count+1
     # print('peak_index:', peak_index)
 
-    peak_distance_sum = []
+    peak_distance_sum = [] # 存储相邻波峰之间的距离
     for j in range(len(peak_index)):
         if j >= 1:
             peak_distance = peak_index[j]-peak_index[j-1]
             peak_distance_sum.append(peak_distance)
 
-    avg_peak_dis = np.mean(peak_distance)
-    # print('peak_distance:', peak_distance)
-    # print('avg_peak_dis:', avg_peak_dis)
-    # print('peak_index[0]:', peak_index[0])
-    # print('peak_index[len(peak_index)]:', peak_index[len(peak_index)-1])
-    # print('total_num - peak_index[len(peak_index)-1]:', total_num - peak_index[len(peak_index)-1])
-
-    # print(' peak_index[len(peak_index)-1]', peak_index[len(peak_index)-1])
-    # print(' peak_index[0]', peak_index[0])
-
-    # print('(total_num - peak_index[len(peak_index)-1])/avg_peak_dis:',
-    #       (total_num - peak_index[len(peak_index) - 1]) / avg_peak_dis)
-    # 0601
+    avg_peak_dis = np.mean(peak_distance) # 相邻波峰之间的平均距离
+   
+    # 计算PPG_nose信号的小数部分
     decimal = (total_num - peak_index[len(peak_index) - 1] + peak_index[0]) / avg_peak_dis
-    # print('decimal:', decimal)
-    # 0601
-    rr_peak_count = rr_peak_count + decimal - 1
+    # 计算一分钟的呼吸率
+    rr_value = (rr_peak_count + decimal - 1)/ total_num * (FPS*60)
 
-    return rr_peak_count
+    return rr_value
 
-def peak_index(pre_signal_arr):
-    max_data = pre_signal_arr[0]
-    max_index = 0
-    for i in range(len(pre_signal_arr)):
-        if pre_signal_arr[i] >= max_data:
-            max_index = i
-    return max_index
-
-
-#  滑动窗口：经过预处理之后的信号，使用滑动窗口，算出波峰波谷的数量
-def sliding_window(signals, width):    # signals:信号数组1*M；width：窗口大小；代码来自erfuyuan0409.py
-    peak_array = []
-    valley_array = []
-    peak_index_arr = []
-    # 检测波峰和波峰位置，滑动窗口，用当前窗和上一窗及下一窗的最大值比较，比它们大则为波峰
-    for i in range(width, len(signals) - width, width):
-        # print('i:',i)
-        pre_max = np.max(signals[i - width:i])   # 前一时刻滑动窗口
-        max = np.max(signals[i:i + width])       # 当前时刻的滑动窗口
-        max_index = peak_index(signals[i:i + width])
-        if i > width:
-            max_index = max_index + width
-        next_max = np.max(signals[i + width:i + width + width])  # 后一时刻的滑动窗口
-        if max > pre_max or max > next_max:
-            peak_array.append(max)
-            peak_index_arr.append(max_index)
-    print('peak_index_arr:',peak_index_arr)
-    # 检测波谷和波谷位置，滑动窗口，用当前窗和上一窗及下一窗的最小值比较，比它们小则为波谷
-
-    print('peak_array:', peak_array)
-    print('valley_array:', valley_array)
-    print('len(peak_array):', len(peak_array))
-    print('len(valley_array):', len(valley_array))
-    return peak_array
     
-def smooth_data(signal): # 对信号进行平滑处理
+def smooth_data(signal): # 对信号进行平滑处理，相当于高斯拟合-2022-07-08
     # https://www.delftstack.com/zh/howto/python/smooth-data-in-python/
     from scipy.signal import savgol_filter
     win_len = 91 # 影响波峰拟合
@@ -395,14 +347,19 @@ def main(args):
                         # cv2.waitKey(0)
         #################### mediapipe人脸检测 #####################    
         else:
-            # print('init_state = ', init_state)
+            ####追踪鼻子ROI ####
             pos = trk.update(image)
             pos = _x1y1wh_to_xyxy(pos)
             pos = [int(l) for l in pos]
+            ####追踪鼻子ROI ####
 
+            # 分割鼻子ROI
             img_infrared = image
             nose_roi = img_infrared[pos[1]:pos[3], pos[0]:pos[2]] 
+
+            # 计算ROI像素均值
             signal_infrared_nose = get_avg_gray_pixel(nose_roi)
+            # 呼吸信号
             ppg_infrared_nose.append(signal_infrared_nose)
            
             # cv2.imshow('image', image)
@@ -410,37 +367,49 @@ def main(args):
             if cv2.waitKey(5) & 0xFF == 27:
                 break
 
-    # 方法一： 先平滑处理，再对信号进行预处理
+    # 方法一： 1.1 先平滑处理，再对信号进行预处理
     ppg_infrared_nose = np.array(ppg_infrared_nose)
     signal_smooth = smooth_data(ppg_infrared_nose)
     PPG_nose = infrared_preprocessing(signal_smooth)
 
-    # 方法二： 没有平滑处理的步骤，直接对信号进行预处理。
-    PPG_nose_1 = infrared_preprocessing(ppg_infrared_nose)
-    # fig1 = plt.figure()
-    # plt.plot(ppg_infrared_nose)
-    # plt.show()
-
-    fig0 = plt.figure()
-    plt.plot(signal_smooth)
-    plt.show()
-    
-    # 波峰检测
+    # 1.2 波峰检测
     indices = find_peaks(PPG_nose, height=None, threshold=None, distance=5,
                                  prominence=None, width=None, wlen=None, rel_height=None,
                                  plateau_size=None)
+
+    # 方法一： 1.3 剔除错误波峰
+    rate1 = 0.25
+    RR1 = eliminate_abnormal_peaks(indices[0], PPG_nose, rate1, total_num, FPS)
+
+    print('indices:', indices)
+    print('RR_value0 = ', RR1)
+
+    # 方法二： 2.1 没有平滑处理的步骤，直接对信号进行预处理。
+    PPG_nose_1 = infrared_preprocessing(ppg_infrared_nose)
+    # 波峰检测
     indices_1 = find_peaks(PPG_nose_1, height=None, threshold=None, distance=5,
                                  prominence=None, width=None, wlen=None, rel_height=None,
                                  plateau_size=None)
-    print('indices:', indices)
-    print('indices_1:', indices_1)
 
-    # 剔除错误波峰
-    rate1 = 0.25
-    RR1 = eliminate_abnormal_peaks(indices[0], PPG_nose, rate1, total_num)
-    RR2 = eliminate_abnormal_peaks(indices_1[0], PPG_nose_1, rate1, total_num)
+    # 方法二： 2.2 剔除错误波峰
+    # RR2 = eliminate_abnormal_peaks(indices_1[0], PPG_nose_1, rate1, total_num, FPS)
 
-    print('RR_value = ', RR1)
+
+    # fig_0 = plt.figure()
+    # plt.plot(ppg_infrared_nose)
+    # plt.show()
+
+    # fig_1 = plt.figure()
+    # plt.plot(signal_smooth)
+    # plt.show()
+
+    # fig_2 = plt.figure()
+    # plt.plot(PPG_nose)
+    # plt.show()
+
+    # print('indices_1:', indices_1)
+    # print('RR_value1 = ', RR2)
+
   
 
 
