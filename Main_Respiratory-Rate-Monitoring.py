@@ -377,7 +377,7 @@ def main(args):
                                  prominence=None, width=None, wlen=None, rel_height=None,
                                  plateau_size=None)
 
-    # 方法一： 1.3 剔除错误波峰
+    # 1.3 剔除错误波峰
     rate1 = 0.25
     RR1 = eliminate_abnormal_peaks(indices[0], PPG_nose, rate1, total_num, FPS)
 
@@ -391,7 +391,7 @@ def main(args):
                                  prominence=None, width=None, wlen=None, rel_height=None,
                                  plateau_size=None)
 
-    # 方法二： 2.2 剔除错误波峰
+    # 2.2 剔除错误波峰
     # RR2 = eliminate_abnormal_peaks(indices_1[0], PPG_nose_1, rate1, total_num, FPS)
 
 
