@@ -237,7 +237,7 @@ def sliding_window(signals, width):    # signals:信号数组1*M；width：窗�
     print('len(valley_array):', len(valley_array))
     return peak_array
     
-def smooth_data(signal): # 对信号进行平滑处理，相当于高斯拟合-2022-07-08
+def smooth_data(signal): # 对信号进行平滑处理
     # https://www.delftstack.com/zh/howto/python/smooth-data-in-python/
     from scipy.signal import savgol_filter
     win_len = 91 # 影响波峰拟合
