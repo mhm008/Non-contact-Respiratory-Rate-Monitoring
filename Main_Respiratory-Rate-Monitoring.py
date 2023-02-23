@@ -189,7 +189,7 @@ def eliminate_abnormal_peaks(index_arr, PPG_nose, rate, total_num, FPS):
     return rr_value
 
     
-def smooth_data(signal): # 对信号进行平滑处理，相当于高斯拟合-2022-07-08
+def smooth_data(signal): # 对信号进行平滑处理2022-07-08
     # https://www.delftstack.com/zh/howto/python/smooth-data-in-python/
     from scipy.signal import savgol_filter
     win_len = 91 # 影响波峰拟合
