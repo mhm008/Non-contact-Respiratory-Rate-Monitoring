@@ -2,7 +2,16 @@
 
 If you find our work useful, please consider citing following works.
 
-H. Mo, S. Ding, S. Yang, A. V. Vasilakos and X. Zheng, "Collaborative Three-Tier Architecture Noncontact Respiratory Rate Monitoring Using Target Tracking and False Peaks Eliminating Algorithms," in IEEE Transactions on Instrumentation and Measurement, vol. 71, pp. 1-13, 2022, Art no. 5022413, doi: 10.1109/TIM.2022.3205644.
+@article{mo2022collaborative,
+  title={Collaborative Three-Tier Architecture Noncontact Respiratory Rate Monitoring Using Target Tracking and False Peaks Eliminating Algorithms},
+  author={Mo, Haimiao and Ding, Shuai and Yang, Shanlin and Vasilakos, Athanasios V and Zheng, Xi},
+  journal={IEEE Transactions on Instrumentation and Measurement},
+  volume={71},
+  pages={1--13},
+  year={2022},
+  publisher={IEEE}
+}
+
 
 https://doi.org/10.1109/TIM.2022.3205644
 
