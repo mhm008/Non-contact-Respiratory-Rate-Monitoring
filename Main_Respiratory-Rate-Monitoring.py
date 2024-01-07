@@ -12,10 +12,10 @@ import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # #  呼吸率对应的频率:0.15-0.40Hz，https://www.nature.com/articles/s41598-019-53808-9
-RR_Min_HZ = 0.15
+RR_Min_HZ = 0.15  # 根据数据分布调整呼吸率滤波范围
 RR_Max_HZ = 0.40
 # RR_Min_HZ = 0.15
-# RR_Max_HZ = 0.70
+# RR_Max_HZ = 0.50
 
 # 采样频率
 FPS = 25
@@ -331,12 +331,11 @@ def main(args):
 
                           # nose = [209, 429, 393, 165, 129]
 
-                          nose = [165, 391, 371, 142, 165]
+                          nose = [165, 391, 371, 142, 165]  # 可以手动选取
                          
                           # 额头
                           forehead = [108, 337, 336, 107, 108]
                           
-
                           # 面部
                           # face = [11, 109, 454, 152, 234, 109, ]
                           face =  [34, 10, 264, 152, 34]
@@ -383,39 +382,13 @@ def main(args):
                                  plateau_size=None)
 
     # 1.3 剔除错误波峰
-    rate1 = 0.25
+    rate1 = 0.25 # 根据数据分布调整该参数
     RR1 = eliminate_abnormal_peaks(indices[0], PPG_nose, rate1, total_num, FPS)
 
     print('indices:', indices)
     print('RR_value0 = ', RR1)
 
-    # 方法二： 2.1 没有平滑处理的步骤，直接对信号进行预处理。
-    # PPG_nose_1 = infrared_preprocessing(ppg_infrared_nose)
-    # # 波峰检测
-    # indices_1 = find_peaks(PPG_nose_1, height=None, threshold=None, distance=5,
-    #                              prominence=None, width=None, wlen=None, rel_height=None,
-    #                              plateau_size=None)
-
-    # 2.2 剔除错误波峰
-    # RR2 = eliminate_abnormal_peaks(indices_1[0], PPG_nose_1, rate1, total_num, FPS)
-
-    # fig_0 = plt.figure()
-    # plt.plot(ppg_infrared_nose)
-    # plt.show()
-
-    # fig_1 = plt.figure()
-    # plt.plot(signal_smooth)
-    # plt.show()
-
-    # fig_2 = plt.figure()
-    # plt.plot(PPG_nose)
-    # plt.show()
-
-    # print('indices_1:', indices_1)
-    # print('RR_value1 = ', RR2)
-
   
-
 
 if __name__ == "__main__":
     args = parse_args()
