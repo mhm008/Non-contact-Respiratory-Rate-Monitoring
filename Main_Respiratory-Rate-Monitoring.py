@@ -318,6 +318,8 @@ def main(args):
                           y = int(y_data_arr[k]*image.shape[0])
                           pt_pos = (x, y)
                           # cv2.circle(image, pt_pos, 1, (0, 255, 0), 1) # 画点
+                          # 人脸地标点参考 https://developers.google.com/mediapipe/solutions/vision/face_landmarker/
+
                           # 眼睛
                           eyeRight = [362,398,384,385,386,387,388,466,263,249,390,373,374,380,381,382,362]
                           eyeLeft = [7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 33, 7]
